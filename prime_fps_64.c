@@ -5,6 +5,9 @@ static uint64_t fps_last_time = 0;
 static int fps_frames = 0;
 static int fps_display = 0;
 
+static uint64_t dt_last_time = 0;
+static float dt = 0.0f;
+
 // Draw one 3x5 bitmap character at 3x scale
 void drawFPSChar(char c, int x, int y) {
     static const uint8_t digits[10][5] = {
@@ -71,7 +74,10 @@ void drawFPS() {
 }
 
 void initFPS(){
-    fps_last_time = get_ticks();
+    uint64_t now = get_ticks();
+
+    fps_last_time = now;
+    dt_last_time = now;
 }
 
 void updateFPS(){
@@ -79,12 +85,22 @@ void updateFPS(){
 
     uint64_t now = get_ticks();
 
+    // Delta time in seconds
+    dt = TICKS_DISTANCE(dt_last_time, now) / (float)TICKS_PER_SECOND;
+    dt_last_time = now;
+
+    // FPS
     if (TICKS_DISTANCE(fps_last_time, now) >= TICKS_PER_SECOND / 2) {
-        float elapsed = TICKS_DISTANCE(fps_last_time, now) / (float)TICKS_PER_SECOND;
+        float elapsed =
+            TICKS_DISTANCE(fps_last_time, now) / (float)TICKS_PER_SECOND;
 
         fps_display = (int)(fps_frames / elapsed);
 
         fps_frames = 0;
         fps_last_time = now;
     }
+}
+
+float getDT(){
+    return dt;
 }
